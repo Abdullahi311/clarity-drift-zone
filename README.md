@@ -5,7 +5,7 @@ A decentralized platform for curating and sharing relaxation content including A
 ## Features
 - Content creators can publish relaxation content with metadata
 - Users can access content using tokens
-- Rating and review system for content
+- Rating and review system for content (1-5 star rating system)
 - Creator rewards system 
 - Content categorization and discovery
 - Monthly subscription model with unlimited access
@@ -22,3 +22,9 @@ A decentralized platform for curating and sharing relaxation content including A
 - 80% of individual purchase revenue goes to content creators
 - 20% goes to platform maintenance and development
 - Subscription revenue helps support the entire creator community
+
+## Rating System
+- Users can rate content on a scale of 1-5 stars
+- Only purchased content can be rated
+- Ratings are averaged across all reviews
+- Rating system helps users discover quality content
