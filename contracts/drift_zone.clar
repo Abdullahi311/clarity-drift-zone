@@ -6,6 +6,7 @@
 (define-constant err-not-found (err u101)) 
 (define-constant err-already-exists (err u102))
 (define-constant err-unauthorized (err u103))
+(define-constant err-invalid-rating (err u104))
 
 ;; Data Variables
 (define-data-var next-content-id uint u0)
@@ -110,6 +111,7 @@
         ((content (unwrap! (map-get? contents content-id) err-not-found))
          (purchase-status (unwrap! (map-get? user-purchases { user: tx-sender, content-id: content-id }) err-unauthorized)))
         (asserts! (get purchased purchase-status) err-unauthorized)
+        (asserts! (and (>= rating u1) (<= rating u5)) err-invalid-rating)
         (map-set contents content-id 
             (merge content {
                 rating: (/ (+ (* (get review-count content) (get rating content)) rating) 
