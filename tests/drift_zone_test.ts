@@ -36,6 +36,51 @@ Clarinet.test({
 });
 
 Clarinet.test({
+    name: "Can purchase subscription and access content",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const wallet1 = accounts.get('wallet_1')!;
+        
+        // Create content
+        let block = chain.mineBlock([
+            Tx.contractCall('drift_zone', 'create-content', [
+                types.ascii("Meditation Guide"),
+                types.ascii("Meditation"),
+                types.ascii("Guided meditation session"),
+                types.uint(50)
+            ], deployer.address)
+        ]);
+        
+        // Purchase subscription
+        let subscriptionBlock = chain.mineBlock([
+            Tx.contractCall('drift_zone', 'purchase-subscription', 
+                [], wallet1.address)
+        ]);
+        
+        subscriptionBlock.receipts[0].result.expectOk().expectBool(true);
+        
+        // Verify subscription status
+        let subStatus = chain.callReadOnlyFn(
+            'drift_zone',
+            'has-active-subscription',
+            [types.principal(wallet1.address)],
+            wallet1.address
+        );
+        
+        subStatus.result.expectOk().expectBool(true);
+        
+        // Access content with subscription
+        let accessBlock = chain.mineBlock([
+            Tx.contractCall('drift_zone', 'purchase-content', [
+                types.uint(0)
+            ], wallet1.address)
+        ]);
+        
+        accessBlock.receipts[0].result.expectOk().expectBool(true);
+    }
+});
+
+Clarinet.test({
     name: "Can purchase and rate content",
     async fn(chain: Chain, accounts: Map<string, Account>) {
         const deployer = accounts.get('deployer')!;
