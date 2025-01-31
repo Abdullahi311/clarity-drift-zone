@@ -81,7 +81,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-    name: "Can purchase and rate content",
+    name: "Can purchase and rate content with valid rating",
     async fn(chain: Chain, accounts: Map<string, Account>) {
         const deployer = accounts.get('deployer')!;
         const wallet1 = accounts.get('wallet_1')!;
@@ -105,7 +105,7 @@ Clarinet.test({
         
         purchaseBlock.receipts[0].result.expectOk().expectBool(true);
         
-        // Rate content
+        // Rate content with valid rating
         let rateBlock = chain.mineBlock([
             Tx.contractCall('drift_zone', 'rate-content', [
                 types.uint(0),
@@ -125,5 +125,46 @@ Clarinet.test({
         
         const content = contentResponse.result.expectSome().expectTuple();
         assertEquals(content['rating'], types.uint(5));
+    }
+});
+
+Clarinet.test({
+    name: "Cannot rate content with invalid rating",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const wallet1 = accounts.get('wallet_1')!;
+        
+        // Create and purchase content
+        let block = chain.mineBlock([
+            Tx.contractCall('drift_zone', 'create-content', [
+                types.ascii("Test Content"),
+                types.ascii("Test"),
+                types.ascii("Test description"),
+                types.uint(50)
+            ], deployer.address),
+            Tx.contractCall('drift_zone', 'purchase-content', [
+                types.uint(0)
+            ], wallet1.address)
+        ]);
+        
+        // Try rating with invalid rating (0)
+        let rateBlock = chain.mineBlock([
+            Tx.contractCall('drift_zone', 'rate-content', [
+                types.uint(0),
+                types.uint(0)
+            ], wallet1.address)
+        ]);
+        
+        rateBlock.receipts[0].result.expectErr().expectUint(104);
+        
+        // Try rating with invalid rating (6)
+        let rateBlock2 = chain.mineBlock([
+            Tx.contractCall('drift_zone', 'rate-content', [
+                types.uint(0),
+                types.uint(6)
+            ], wallet1.address)
+        ]);
+        
+        rateBlock2.receipts[0].result.expectErr().expectUint(104);
     }
 });
